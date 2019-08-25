@@ -18,6 +18,17 @@
 #include "input.h"
 #include "rc.h"
 
+#define GB_SCREEN_WIDTH 160
+#define GB_SCREEN_HEIGHT 144
+#define RES_HW_SCREEN_HORIZONTAL  240
+#define RES_HW_SCREEN_VERTICAL    240
+
+//#define BLACKER_BLACKS
+
+#define MAX(x, y) (((x) > (y)) ? (x) : (y))
+#define MIN(x, y) (((x) < (y)) ? (x) : (y))
+#define ABS(x) (((x) < 0) ? (-x) : (x))
+
 struct fb fb;
 
 static int use_yuv = -1;
@@ -28,7 +39,9 @@ static SDL_Joystick * sdl_joy = NULL;
 static const int joy_commit_range = 3276;
 static char Xstatus, Ystatus;
 
-static SDL_Surface *screen;
+SDL_Surface *hw_screen;
+SDL_Surface *virtual_hw_screen;
+SDL_Surface *gb_screen;
 static SDL_Overlay *overlay;
 static SDL_Rect overlay_rect;
 
@@ -108,7 +121,7 @@ static void overlay_init()
 		if (vmode[0] < 320 || vmode[1] < 288)
 			return;
 	
-	overlay = SDL_CreateYUVOverlay(320, 144, SDL_YUY2_OVERLAY, screen);
+	overlay = SDL_CreateYUVOverlay(320, 144, SDL_YUY2_OVERLAY, gb_screen);
 
 	if (!overlay) return;
 
@@ -172,8 +185,16 @@ void vid_init()
 	if (SDL_Init(SDL_INIT_VIDEO))
 		die("SDL: Couldn't initialize SDL: %s\n", SDL_GetError());
 
-	if (!(screen = SDL_SetVideoMode(vmode[0], vmode[1], vmode[2], flags)))
+	/*if (!(gb_screen = SDL_SetVideoMode(RES_HW_SCREEN_HORIZONTAL, RES_HW_SCREEN_VERTICAL, 16, flags)))
 		die("SDL: can't set video mode: %s\n", SDL_GetError());
+	gb_screen = SDL_CreateRGBSurface(SDL_SWSURFACE,
+		vmode[0], vmode[1], 16, 0xFFFF, 0xFFFF, 0xFFFF, 0);***/
+
+	if (!(hw_screen = SDL_SetVideoMode(RES_HW_SCREEN_HORIZONTAL, RES_HW_SCREEN_VERTICAL, 16, flags)))
+		die("SDL: can't set video mode: %s\n", SDL_GetError());
+	gb_screen = SDL_CreateRGBSurface(SDL_SWSURFACE, vmode[0], vmode[1], 16, 0, 0, 0, 0);
+	virtual_hw_screen = SDL_CreateRGBSurface(SDL_SWSURFACE, RES_HW_SCREEN_HORIZONTAL, RES_HW_SCREEN_VERTICAL, 16, 0, 0, 0, 0);
+
 
 	SDL_ShowCursor(0);
 
@@ -183,22 +204,22 @@ void vid_init()
 	
 	if (fb.yuv) return;
 	
-	SDL_LockSurface(screen);
+	SDL_LockSurface(gb_screen);
 	
-	fb.w = screen->w;
-	fb.h = screen->h;
-	fb.pelsize = screen->format->BytesPerPixel;
-	fb.pitch = screen->pitch;
+	fb.w = gb_screen->w;
+	fb.h = gb_screen->h;
+	fb.pelsize = gb_screen->format->BytesPerPixel;
+	fb.pitch = gb_screen->pitch;
 	fb.indexed = fb.pelsize == 1;
-	fb.ptr = screen->pixels;
-	fb.cc[0].r = screen->format->Rloss;
-	fb.cc[0].l = screen->format->Rshift;
-	fb.cc[1].r = screen->format->Gloss;
-	fb.cc[1].l = screen->format->Gshift;
-	fb.cc[2].r = screen->format->Bloss;
-	fb.cc[2].l = screen->format->Bshift;
+	fb.ptr = gb_screen->pixels;
+	fb.cc[0].r = gb_screen->format->Rloss;
+	fb.cc[0].l = gb_screen->format->Rshift;
+	fb.cc[1].r = gb_screen->format->Gloss;
+	fb.cc[1].l = gb_screen->format->Gshift;
+	fb.cc[2].r = gb_screen->format->Bloss;
+	fb.cc[2].l = gb_screen->format->Bshift;
 
-	SDL_UnlockSurface(screen);
+	SDL_UnlockSurface(gb_screen);
 
 	fb.enabled = 1;
 	fb.dirty = 0;
@@ -222,7 +243,7 @@ void ev_poll()
 			break;
 		case SDL_KEYDOWN:
 			if ((event.key.keysym.sym == SDLK_RETURN) && (event.key.keysym.mod & KMOD_ALT))
-				SDL_WM_ToggleFullScreen(screen);
+				SDL_WM_ToggleFullScreen(gb_screen);
 			ev.type = EV_PRESS;
 			ev.code = mapscancode(event.key.keysym.sym);
 			ev_postevent(&ev);
@@ -377,7 +398,7 @@ void vid_setpal(int i, int r, int g, int b)
 
 	col.r = r; col.g = g; col.b = b;
 
-	SDL_SetColors(screen, &col, i, 1);
+	SDL_SetColors(gb_screen, &col, i, 1);
 }
 
 void vid_preinit()
@@ -391,7 +412,9 @@ void vid_close()
 		SDL_UnlockYUVOverlay(overlay);
 		SDL_FreeYUVOverlay(overlay);
 	}
-	else SDL_UnlockSurface(screen);
+	else{
+		SDL_UnlockSurface(gb_screen);
+	}
 	SDL_Quit();
 	fb.enabled = 0;
 }
@@ -409,8 +432,88 @@ void vid_begin()
 		fb.ptr = overlay->pixels[0];
 		return;
 	}
-	SDL_LockSurface(screen);
-	fb.ptr = screen->pixels;
+	SDL_LockSurface(gb_screen);
+	fb.ptr = gb_screen->pixels;
+}
+
+/// Nearest neighboor optimized with possible out of gb_screen coordinates (for cropping)
+void flip_NNOptimized_AllowOutOfScreen(SDL_Surface *virtual_screen, SDL_Surface *hardware_screen, int new_w, int new_h){
+  int w1=virtual_screen->w;
+  //int h1=virtual_screen->h;
+  int w2=new_w;
+  int h2=new_h;
+  int x_ratio = (int)((virtual_screen->w<<16)/w2);
+  int y_ratio = (int)((virtual_screen->h<<16)/h2);
+  int x2, y2 ;
+
+  /// --- Compute padding for centering when out of bounds ---
+  int y_padding = (RES_HW_SCREEN_VERTICAL-new_h)/2;
+  int x_padding = 0;
+  if(w2>RES_HW_SCREEN_HORIZONTAL){
+    x_padding = (w2-RES_HW_SCREEN_HORIZONTAL)/2 + 1;
+  }
+  int x_padding_ratio = x_padding*w1/w2;
+  //printf("virtual_screen->h=%d, h2=%d\n", virtual_screen->h, h2);
+
+  for (int i=0;i<h2;i++)
+  {
+    if(i>=RES_HW_SCREEN_VERTICAL){
+      continue;
+    }
+
+    uint16_t* t = ( (uint16_t*)hardware_screen->pixels + (i+y_padding)* ((w2>RES_HW_SCREEN_HORIZONTAL)?RES_HW_SCREEN_HORIZONTAL:w2) );
+    y2 = ((i*y_ratio)>>16);
+    uint16_t* p = ( (uint16_t*)virtual_screen->pixels + y2*w1 + x_padding_ratio );
+    int rat = 0;
+    for (int j=0;j<w2;j++)
+    {
+      if(j>=RES_HW_SCREEN_HORIZONTAL){
+        continue;
+      }
+      x2 = (rat>>16);
+#ifdef BLACKER_BLACKS
+      *t++ = p[x2] & 0xFFDF; /// Optimization for blacker blacks
+#else
+      *t++ = p[x2]; /// Optimization for blacker blacks
+#endif
+      rat += x_ratio;
+      //printf("y=%d, x=%d, y2=%d, x2=%d, (y2*virtual_screen->w)+x2=%d\n", i, j, y2, x2, (y2*virtual_screen->w)+x2);
+    } 
+  }
+}
+
+void SDL_Rotate_270(SDL_Surface * hw_surface, SDL_Surface * virtual_hw_surface){
+  int i, j;
+    uint16_t *source_pixels = (uint16_t*) virtual_hw_surface->pixels;
+    uint16_t *dest_pixels = (uint16_t*) hw_surface->pixels;
+
+    /// --- Checking for right pixel format ---
+    //MENU_DEBUG_PRINTF("Source bpb = %d, Dest bpb = %d\n", virtual_hw_surface->format->BitsPerPixel, hw_surface->format->BitsPerPixel);
+    if(virtual_hw_surface->format->BitsPerPixel != 16){
+      printf("Error in SDL_Rotate_270, Wrong virtual_hw_surface pixel format: %d bpb, expected: 16 bpb\n", virtual_hw_surface->format->BitsPerPixel);
+      return;
+    }
+    if(hw_surface->format->BitsPerPixel != 16){
+      printf("Error in SDL_Rotate_270, Wrong hw_surface pixel format: %d bpb, expected: 16 bpb\n", hw_surface->format->BitsPerPixel);
+      return;
+    }
+
+    /// --- Checking if same dimensions ---
+    if(hw_surface->w != virtual_hw_surface->w || hw_surface->h != virtual_hw_surface->h){
+      printf("Error in SDL_Rotate_270, hw_surface (%dx%d) and virtual_hw_surface (%dx%d) have different dimensions\n",
+        hw_surface->w, hw_surface->h, virtual_hw_surface->w, virtual_hw_surface->h);
+      return;
+    }
+
+  /// --- Pixel copy and rotation (270) ---
+  uint16_t *cur_p_src, *cur_p_dst;
+  for(i=0; i<virtual_hw_surface->h; i++){
+    for(j=0; j<virtual_hw_surface->w; j++){
+      cur_p_src = source_pixels + i*virtual_hw_surface->w + j;
+      cur_p_dst = dest_pixels + (hw_surface->h-1-j)*hw_surface->w + i;
+      *cur_p_dst = *cur_p_src;
+    }
+  }
 }
 
 void vid_end()
@@ -422,8 +525,16 @@ void vid_end()
 			SDL_DisplayYUVOverlay(overlay, &overlay_rect);
 		return;
 	}
-	SDL_UnlockSurface(screen);
-	if (fb.enabled) SDL_Flip(screen);
+	SDL_UnlockSurface(gb_screen);
+
+	/// Fullscreen
+	flip_NNOptimized_AllowOutOfScreen(gb_screen, virtual_hw_screen,
+        RES_HW_SCREEN_HORIZONTAL, RES_HW_SCREEN_VERTICAL);
+
+	/// Rotate
+	SDL_Rotate_270(hw_screen, virtual_hw_screen);
+
+	if (fb.enabled) SDL_Flip(hw_screen);
 }
 
 

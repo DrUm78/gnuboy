@@ -415,6 +415,8 @@ void vid_close()
 	else{
 		SDL_UnlockSurface(gb_screen);
 	}
+	SDL_FreeSurface(gb_screen);
+	SDL_FreeSurface(virtual_hw_screen);
 	SDL_Quit();
 	fb.enabled = 0;
 }

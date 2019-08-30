@@ -29,6 +29,12 @@ static char *defaultconfig[] =
 	"bind b +b",
 	"bind s +start",
 	"bind k +select",
+	"bind q menu",
+	"bind c volumeinc",
+	"bind e volumedec",
+	"bind g brightnessinc",
+	"bind w brightnessdec",
+	"bind p savestate",
 	"bind tab +select",
 	"bind joyup +up",
 	"bind joydown +down",
@@ -229,8 +235,10 @@ int main(int argc, char *argv[])
 	sys_sanitize(s);
 	sys_initpath(s);
 
-	for (i = 0; defaultconfig[i]; i++)
+	for (i = 0; defaultconfig[i]; i++){
+		//printf("Apply defaultconfig[%d] = %s\n", i, defaultconfig[i]);
 		rc_command(defaultconfig[i]);
+	}
 
 	cmd = malloc(strlen(rom) + 11);
 	sprintf(cmd, "source %s", rom);

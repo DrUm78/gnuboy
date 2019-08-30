@@ -31,6 +31,8 @@ int rc_bindkey(char *keyname, char *cmd)
 
 	if (keybind[key]) free(keybind[key]);
 	keybind[key] = a;
+
+	//printf("Bound keybind[%d] = %s\n", key, a);
 	
 	return 0;
 }
@@ -69,7 +71,7 @@ void rc_unbindall()
 void rc_dokey(int key, int st)
 {
 	if (!keybind[key]) return;
-	if (keybind[key][0] != '+' && !st) return;
+	if (keybind[key][0] != '+' && !st) return; // this is to handle only the press evt for not gamepad buttons (shortcuts for menu, save, ...)
 	
 	if (st)
 		rc_command(keybind[key]);

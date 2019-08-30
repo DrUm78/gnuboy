@@ -8,6 +8,7 @@
 #include "emu.h"
 #include "loader.h"
 #include "split.h"
+#include "sys.h"
 
 
 /*
@@ -97,6 +98,88 @@ static int cmd_loadstate(int argc, char **argv)
 	return 0;
 }
 
+static int cmd_inc_volume(int argc, char **argv)
+{
+	printf("Increase volume\n");
+    char shell_cmd[100];
+    FILE *fp;
+
+    /// ----- Compute new value -----
+	volume_percentage = (volume_percentage > 100 - STEP_CHANGE_VOLUME)?
+							100:(volume_percentage+STEP_CHANGE_VOLUME);
+
+	/// ----- Shell cmd ----
+    sprintf(shell_cmd, "%s %d", SHELL_CMD_VOLUME_SET, volume_percentage);
+    fp = popen(shell_cmd, "r");
+    if (fp == NULL) {
+	printf("Failed to run command %s\n", shell_cmd);
+	}
+	return 0;
+}
+
+static int cmd_dec_volume(int argc, char **argv)
+{
+	printf("Decrease volume\n");
+    char shell_cmd[100];
+    FILE *fp;
+
+    /// ----- Compute new value -----
+	volume_percentage = (volume_percentage < STEP_CHANGE_VOLUME)?
+							0:(volume_percentage-STEP_CHANGE_VOLUME);
+
+	/// ----- Shell cmd ----
+    sprintf(shell_cmd, "%s %d", SHELL_CMD_VOLUME_SET, volume_percentage);
+    fp = popen(shell_cmd, "r");
+    if (fp == NULL) {
+	printf("Failed to run command %s\n", shell_cmd);
+	}
+	return 0;
+}
+
+static int cmd_inc_brightness(int argc, char **argv)
+{
+	printf("Increase brightness\n");
+    char shell_cmd[100];
+    FILE *fp;
+
+    /// ----- Compute new value -----
+	brightness_percentage = (brightness_percentage > 100 - STEP_CHANGE_BRIGHTNESS)?
+								100:(brightness_percentage+STEP_CHANGE_BRIGHTNESS);
+
+    /// ----- Shell cmd ----
+	sprintf(shell_cmd, "%s %d", SHELL_CMD_BRIGHTNESS_SET, brightness_percentage);
+    fp = popen(shell_cmd, "r");
+    if (fp == NULL) {
+	printf("Failed to run command %s\n", shell_cmd);
+	}
+	return 0;
+}
+
+static int cmd_dec_brightness(int argc, char **argv)
+{
+	printf("Decrease brightness\n");
+    char shell_cmd[100];
+    FILE *fp;
+
+    /// ----- Compute new value -----
+	brightness_percentage = (brightness_percentage < STEP_CHANGE_BRIGHTNESS)?
+							0:(brightness_percentage-STEP_CHANGE_BRIGHTNESS);
+
+    /// ----- Shell cmd ----
+	sprintf(shell_cmd, "%s %d", SHELL_CMD_BRIGHTNESS_SET, brightness_percentage);
+    fp = popen(shell_cmd, "r");
+    if (fp == NULL) {
+	printf("Failed to run command %s\n", shell_cmd);
+	}
+	return 0;
+}
+
+static int cmd_menu(int argc, char **argv)
+{
+	printf("Launch menu\n");
+	run_menu_loop();
+	return 0;
+}
 
 
 /*
@@ -114,6 +197,11 @@ rccmd_t rccmds[] =
 	RCC("quit", cmd_quit),
 	RCC("savestate", cmd_savestate),
 	RCC("loadstate", cmd_loadstate),
+	RCC("menu", cmd_menu),
+	RCC("volumeinc", cmd_inc_volume),
+	RCC("volumedec", cmd_dec_volume),
+	RCC("brightnessinc", cmd_inc_brightness),
+	RCC("brightnessdec", cmd_dec_brightness),
 	
 	RCC("+up", cmd_up),
 	RCC("-up", cmd_up),

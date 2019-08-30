@@ -90,7 +90,7 @@ static char *saveprefix;
 static char *savename;
 static char *savedir;
 
-static int saveslot;
+int saveslot;
 
 static int forcebatt, nobatt;
 static int forcedmg, gbamode;
@@ -346,6 +346,28 @@ void state_load(int n)
 		mem_updatemap();
 	}
 	free(name);
+}
+
+int check_savefile(int n, char *savefile){
+	FILE *f;
+	char *name;
+
+	if (n < 0) n = saveslot;
+	if (n < 0) n = 0;
+	name = malloc(strlen(saveprefix) + 5);
+	sprintf(name, "%s.%03d", saveprefix, n);
+
+
+	if ( !(f = fopen(name, "rb")) ){
+		return 0;
+	}
+	fclose(f);
+
+	if(savefile){
+		strcpy(savefile, name);
+	}
+
+	return 1;
 }
 
 void rtc_save()

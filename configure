@@ -942,6 +942,9 @@ rm -f conftest.sh
 
 CFLAGS="$CFLAGS"
 
+### Modif funkey ###
+#CFLAGS="$CFLAGS -lSDL -lSDL_image -lSDL_ttf"
+
 ac_ext=c
 ac_cpp='$CPP $CPPFLAGS'
 ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
@@ -2653,8 +2656,8 @@ echo "${ECHO_T}no" >&6
 fi
 
 if test "$SDL_CONFIG" ; then
-SDL_LIBS="`$SDL_CONFIG --libs`"
-SDL_CFLAGS="`$SDL_CONFIG --cflags`"
+SDL_LIBS="`$SDL_CONFIG --libs` -lSDL_image -lSDL_ttf"
+SDL_CFLAGS="`$SDL_CONFIG --cflags` -lSDL -lSDL_image -lSDL_ttf"
 old_incs="$INCS"
 INCS="$INCS $SDL_CFLAGS"
 echo "$as_me:2662: checking for SDL_Init in -lSDL" >&5
@@ -3148,7 +3151,7 @@ if test "$enable_warnings" = yes ; then
 case "$CC" in *gcc*)
 echo "$as_me:3151: result: enabling selected compiler warnings" >&5
 echo "${ECHO_T}enabling selected compiler warnings" >&6
-CFLAGS="$CFLAGS -ansi -pedantic -Wall" ;;
+CFLAGS="$CFLAGS -std=c99 -pedantic -Wall" ;;
 *)
 echo "$as_me:3155: result: disabling warnings for non-gcc compiler" >&5
 echo "${ECHO_T}disabling warnings for non-gcc compiler" >&6 ;;

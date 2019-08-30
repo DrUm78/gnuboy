@@ -73,8 +73,8 @@ fi
 if test "$with_sdl" != "no" ; then
 AC_CHECK_PROG(SDL_CONFIG, sdl-config, yes)
 if test "$SDL_CONFIG" ; then
-SDL_LIBS="`$SDL_CONFIG --libs`"
-SDL_CFLAGS="`$SDL_CONFIG --cflags`"
+SDL_LIBS="`$SDL_CONFIG --libs` -lSDL_image -lSDL_ttf"
+SDL_CFLAGS="`$SDL_CONFIG --cflags` -lSDL -lSDL_image -lSDL_ttf"
 old_incs="$INCS"
 INCS="$INCS $SDL_CFLAGS"
 AC_CHECK_LIB(SDL, SDL_Init, [

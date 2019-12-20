@@ -633,7 +633,9 @@ void vid_flip(){
 	SDL_Rotate_270(hw_screen, virtual_hw_screen);
 #endif
 
-	SDL_BlitSurface(virtual_hw_screen, NULL, hw_screen, NULL);
+	//SDL_BlitSurface(virtual_hw_screen, NULL, hw_screen, NULL);
+    memcpy(hw_screen->pixels, virtual_hw_screen->pixels, hw_screen->h*hw_screen->w*sizeof(uint16_t));
+
 	SDL_Flip(hw_screen);
 }
 

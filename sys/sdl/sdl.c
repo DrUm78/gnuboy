@@ -628,9 +628,12 @@ void SDL_Rotate_270(SDL_Surface * hw_surface, SDL_Surface * virtual_hw_surface){
 }
 
 void vid_flip(){
+#if 0
 	/// Rotate
 	SDL_Rotate_270(hw_screen, virtual_hw_screen);
+#endif
 
+	SDL_BlitSurface(virtual_hw_screen, NULL, hw_screen, NULL);
 	SDL_Flip(hw_screen);
 }
 

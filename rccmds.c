@@ -26,6 +26,8 @@ CMD_PAD(left, LEFT);
 CMD_PAD(right, RIGHT);
 CMD_PAD(a, A);
 CMD_PAD(b, B);
+/*CMD_PAD(x, A);
+CMD_PAD(y, B);*/
 CMD_PAD(start, START);
 CMD_PAD(select, SELECT);
 

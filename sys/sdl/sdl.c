@@ -23,6 +23,7 @@
 /// -------------- DEFINES --------------
 #define MIN(a,b) (((a)<(b))?(a):(b))
 #define MAX(a,b) (((a)>(b))?(a):(b))
+#define ABS(x) (((x) < 0) ? (-x) : (x))
 
 //#define MENU_DEBUG
 #define MENU_ERROR
@@ -44,12 +45,6 @@
 #define GB_SCREEN_HEIGHT 144
 #define RES_HW_SCREEN_HORIZONTAL  240
 #define RES_HW_SCREEN_VERTICAL    240
-
-//#define BLACKER_BLACKS
-
-#define MAX(x, y) (((x) > (y)) ? (x) : (y))
-#define MIN(x, y) (((x) < (y)) ? (x) : (y))
-#define ABS(x) (((x) < 0) ? (-x) : (x))
 
 #define SCREEN_HORIZONTAL_SIZE      RES_HW_SCREEN_HORIZONTAL
 #define SCREEN_VERTICAL_SIZE        RES_HW_SCREEN_VERTICAL

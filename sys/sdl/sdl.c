@@ -1511,6 +1511,11 @@ void run_menu_loop()
 		/// --------- reset screen refresh ---------
 		screen_refresh = 0;
     }
+
+	/// ------ Reset prev key repeat params -------
+	if(SDL_EnableKeyRepeat(backup_key_repeat_delay, backup_key_repeat_interval)){
+		MENU_ERROR_PRINTF("ERROR with SDL_EnableKeyRepeat: %s\n", SDL_GetError());
+	}
 }
 
 

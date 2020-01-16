@@ -35,7 +35,14 @@ rcvar_t pcm_exports[] =
 
 static void audio_callback(void *blah, byte *stream, int len)
 {
-	memcpy(stream, pcm.buf, len);
+	if(!audio_done){
+		memcpy(stream, pcm.buf, len);
+	}
+	else{
+		// put in some silence..
+		memset(stream, 0, len);
+	}
+
 	audio_done = 1;
 }
 
@@ -65,6 +72,8 @@ void pcm_init()
 	pcm.buf = malloc(pcm.len);
 	pcm.pos = 0;
 	memset(pcm.buf, 0, pcm.len);
+
+	audio_done = 1;
 	
 	SDL_PauseAudio(0);
 }

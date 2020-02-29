@@ -10,6 +10,7 @@
 #include <time.h>
 
 #include "defs.h"
+#include "emu.h"
 #include "regs.h"
 #include "mem.h"
 #include "hw.h"
@@ -326,6 +327,18 @@ void state_save(int n)
 }
 
 
+void state_file_save(char *filepath)
+{
+	FILE *f;
+
+	if ((f = fopen(filepath, "wb")))
+	{
+		savestate(f);
+		fclose(f);
+	}
+}
+
+
 void state_load(int n)
 {
 	FILE *f;
@@ -346,6 +359,21 @@ void state_load(int n)
 		mem_updatemap();
 	}
 	free(name);
+}
+
+void state_file_load(char *filepath)
+{
+	FILE *f;
+
+	if ((f = fopen(filepath, "rb")))
+	{
+		loadstate(f);
+		fclose(f);
+		vram_dirty();
+		pal_dirty();
+		sound_dirty();
+		mem_updatemap();
+	}
 }
 
 int check_savefile(int n, char *savefile){
@@ -432,7 +460,11 @@ void loader_init(char *s)
 {
 	char *name, *p;
 
-	sys_checkdir(savedir, 1); /* needs to be writable */
+	/* Surcharge savedir */
+	savedir = mRomPath;
+
+	/* savedir needs to be writable */
+	sys_checkdir(savedir, 1);
 
 	romfile = s;
 	rom_load();

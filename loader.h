@@ -24,7 +24,9 @@ int sram_save();
 
 void loader_init(char *s);
 void state_save(int n);
+void state_file_save(char *filepath);
 void state_load(int n);
+void state_file_load(char *filepath);
 int check_savefile(int n, char *savefile);
 
 #endif

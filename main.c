@@ -177,6 +177,18 @@ static int bad_signals[] =
 	0
 };
 
+/* Handler for SIGUSR1, caused by closing the console */
+void handle_sigusr1(int sig)
+{
+    //printf("Caught signal USR1 %d\n", sig);
+
+    /* Exit menu if it was launched */
+    stop_menu_loop = 1;
+
+    /* Signal to quick save and poweoff after next loop */
+    mQuickSaveAndPoweroff = 1;
+}
+
 static void fatalsignal(int s)
 {
 	die("Signal %d\n", s);
@@ -205,6 +217,9 @@ int main(int argc, char *argv[])
 	int i;
 	char *opt, *arg, *cmd, *s, *rom = 0;
 
+	/* Save program name */
+	prog_name = argv[0];
+
 	/* Avoid initializing video if we don't have to */
 	for (i = 1; i < argc; i++)
 	{
@@ -227,6 +242,27 @@ int main(int argc, char *argv[])
 	}
 	
 	if (!rom) usage(base(argv[0]));
+
+	/* Save Rom path */
+	mRomName = rom;
+    mRomPath = (char *)malloc(strlen(mRomName)+1);
+    strcpy(mRomPath, mRomName);
+    char *slash = strrchr ((char*)mRomPath, '/');
+    *slash = 0;
+
+    /* Rom name without extension */
+    char *point = strrchr ((char*)slash+1, '.');
+    *point = 0;
+
+    /* Set quicksave filename */
+    quick_save_file = (char *)malloc(strlen(mRomPath) + strlen(slash+1) +
+          strlen(quick_save_file_extension) + 2 + 1);
+    sprintf(quick_save_file, "%s/%s.%s",
+          mRomPath, slash+1, quick_save_file_extension);
+    printf("Quick_save_file: %s\n", quick_save_file);
+
+	/* Init USR1 Signal (for quick save and poweroff) */
+	signal(SIGUSR1, handle_sigusr1);
 
 	/* If we have special perms, drop them ASAP! */
 	vid_preinit();
@@ -268,6 +304,16 @@ int main(int argc, char *argv[])
 			rc_command(cmd);
 			free(cmd);
 		}
+		else if (!strcmp(argv[i], "--loadStateSlot"))
+		{
+			if (i + 1 >= argc) die("missing argument to loadStateSlot\n");
+			load_state_slot = atoi(argv[i+1]);
+		}
+		else if (!strcmp(argv[i], "--loadStateFile"))
+		{
+			if (i + 1 >= argc) die("missing argument to loadStateFile\n");
+			load_state_file = argv[i+1];
+		}
 		else if (!strncmp(argv[i], "--no-", 5))
 		{
 			opt = strdup(argv[i]+5);
@@ -292,6 +338,7 @@ int main(int argc, char *argv[])
 			
 			cmd = malloc(strlen(opt) + strlen(arg) + 6);
 			sprintf(cmd, "set %s %s", opt, arg);
+			//printf("cmd = %s\n", cmd);
 			
 			rc_command(cmd);
 			free(cmd);

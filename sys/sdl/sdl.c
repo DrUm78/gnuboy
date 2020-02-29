@@ -552,9 +552,24 @@ void vid_end()
 	}
 	SDL_UnlockSurface(gb_screen);
 
+
+	//If the surface must be locked
+	if( SDL_MUSTLOCK( hw_screen ) )
+	{
+		// Lock the surface
+	SDL_LockSurface( hw_screen );
+	}
+
 	/// Fullscreen
 	flip_NNOptimized_AllowOutOfScreen(gb_screen, hw_screen,
         RES_HW_SCREEN_HORIZONTAL, RES_HW_SCREEN_VERTICAL);
+
+	//If the surface must be unlocked
+	if( SDL_MUSTLOCK( hw_screen ) )
+	{
+		// Lock the surface
+	SDL_UnlockSurface( hw_screen );
+	}
 
 	if (fb.enabled) vid_flip();
 }

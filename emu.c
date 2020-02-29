@@ -1,9 +1,13 @@
 
 
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
 #include "defs.h"
 #include "regs.h"
 #include "hw.h"
+#include "loader.h"
 #include "cpu.h"
 #include "mem.h"
 #include "lcd.h"
@@ -17,6 +21,16 @@
 static int framelen = 16743;
 static int framecount;
 
+char *prog_name;
+char *load_state_file = NULL;
+int load_state_slot = -1;
+char *quick_save_file_extension = "quicksave";
+char *mRomName = NULL;
+char *mRomPath = NULL;
+char *quick_save_file = NULL;
+int mQuickSaveAndPoweroff=0;
+
+
 rcvar_t emu_exports[] =
 {
 	RCV_INT("framelen", &framelen),
@@ -26,6 +40,43 @@ rcvar_t emu_exports[] =
 
 
 
+
+/* Quick save and turn off the console */
+void quick_save_and_poweroff()
+{
+    /* Vars */
+    char shell_cmd[1024];
+    FILE *fp;
+
+    /* Send command to kill any previously scheduled shutdown */
+    sprintf(shell_cmd, "pkill %s", SHELL_CMD_SCHEDULE_POWERDOWN);
+    fp = popen(shell_cmd, "r");
+    if (fp == NULL) {
+      printf("Failed to run command %s\n", shell_cmd);
+    }
+
+    /* Save  */
+    state_file_save(quick_save_file);
+
+    /* Write quick load file */
+    sprintf(shell_cmd, "%s SDL_NOMOUSE=1 \"%s\" --loadStateFile \"%s\" \"%s\"",
+      SHELL_CMD_WRITE_QUICK_LOAD_CMD, prog_name, quick_save_file, mRomName);
+    printf("Cmd write quick load file:\n  %s\n", shell_cmd);
+    fp = popen(shell_cmd, "r");
+    if (fp == NULL) {
+      printf("Failed to run command %s\n", shell_cmd);
+    }
+
+    /* Clean Poweroff */
+    sprintf(shell_cmd, "%s", SHELL_CMD_POWERDOWN);
+    fp = popen(shell_cmd, "r");
+    if (fp == NULL) {
+      printf("Failed to run command %s\n", shell_cmd);
+    }
+
+    /* Exit Emulator */
+    exit(0);
+}
 
 
 
@@ -74,6 +125,44 @@ void emu_run()
 
 	vid_begin();
 	lcd_begin();
+
+	/* Load slot */
+    if(load_state_slot != -1){
+	printf("LOADING FROM SLOT %d...\n", load_state_slot+1);
+	state_load(load_state_slot);
+	printf("LOADED FROM SLOT %d\n", load_state_slot+1);
+	load_state_slot = -1;
+    }
+    /* Load file */
+    else if(load_state_file != NULL){
+	printf("LOADING FROM FILE %s...\n", load_state_file);
+	state_file_load(load_state_file);
+	printf("LOADED FROM SLOT %s\n", load_state_file);
+	load_state_file = NULL;
+    }
+    /* Load quick save file */
+    else if(access( quick_save_file, F_OK ) != -1){
+	printf("Found quick save file: %s\n", quick_save_file);
+
+	int resume = launch_resume_menu_loop();
+	if(resume == RESUME_YES){
+	    printf("Resume game from quick save file: %s\n", quick_save_file);
+	    state_file_load(quick_save_file);
+	}
+	else{
+	    printf("Reset game\n");
+	}
+    }
+
+    /* Remove quicksave file if present */
+    if (remove(quick_save_file) == 0){
+        printf("Deleted successfully: %s\n", quick_save_file);
+    }
+    else{
+        printf("Unable to delete the file: %s\n", quick_save_file);
+    }
+
+    /* Main emulation loop */
 	for (;;)
 	{
 		cpu_emulate(2280);
@@ -89,7 +178,15 @@ void emu_run()
 			sys_sleep(delay);
 			sys_elapsed(timer);
 		}
+
+		/* Quick save and poweroff */
+		if(mQuickSaveAndPoweroff){
+			quick_save_and_poweroff();
+			mQuickSaveAndPoweroff = 0;
+		}
+
 		doevents();
+
 		vid_begin();
 		if (framecount) { if (!--framecount) die("finished\n"); }
 		

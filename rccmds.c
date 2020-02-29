@@ -96,6 +96,7 @@ static int cmd_savestate(int argc, char **argv)
 
 static int cmd_loadstate(int argc, char **argv)
 {
+	printf("cmd_loadstate %d\n", atoi(argv[1]));
 	state_load(argc > 1 ? atoi(argv[1]) : -1);
 	return 0;
 }

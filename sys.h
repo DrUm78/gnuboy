@@ -6,6 +6,18 @@
 #include <SDL/SDL_image.h>
 
 
+/// -------------- DEFINES --------------
+#define MIN(a,b) (((a)<(b))?(a):(b))
+#define MAX(a,b) (((a)>(b))?(a):(b))
+#define ABS(x) (((x) < 0) ? (-x) : (x))
+
+#define GB_SCREEN_WIDTH 160
+#define GB_SCREEN_HEIGHT 144
+#define RES_HW_SCREEN_HORIZONTAL  240
+#define RES_HW_SCREEN_VERTICAL    240
+#define SCREEN_HORIZONTAL_SIZE      RES_HW_SCREEN_HORIZONTAL
+#define SCREEN_VERTICAL_SIZE        RES_HW_SCREEN_VERTICAL
+
 typedef enum{
     MENU_TYPE_VOLUME,
     MENU_TYPE_BRIGHTNESS,
@@ -36,6 +48,7 @@ typedef enum {ASPECT_RATIOS} ENUM_ASPECT_RATIOS_TYPES;
 ////------ Defines to be shared -------
 #define STEP_CHANGE_VOLUME          10
 #define STEP_CHANGE_BRIGHTNESS      10
+#define NOTIF_SECONDS_DISP          2
 
 ////------ Menu commands -------
 #define SHELL_CMD_VOLUME_GET        "volume_get"
@@ -43,6 +56,7 @@ typedef enum {ASPECT_RATIOS} ENUM_ASPECT_RATIOS_TYPES;
 #define SHELL_CMD_BRIGHTNESS_GET    "brightness_get"
 #define SHELL_CMD_BRIGHTNESS_SET    "brightness_set"
 #define SHELL_CMD_POWERDOWN         "shutdown_funkey"
+#define SHELL_CMD_NOTIF             "notif_set"
 
 ////------ Global variables -------
 extern int volume_percentage;

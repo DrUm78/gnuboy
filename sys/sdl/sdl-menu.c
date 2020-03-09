@@ -363,7 +363,7 @@ void init_menu_zones(){
     /// Init Load Menu
     add_menu_zone(MENU_TYPE_LOAD);
     /// Init Aspect Ratio Menu
-    //add_menu_zone(MENU_TYPE_ASPECT_RATIO);
+    add_menu_zone(MENU_TYPE_ASPECT_RATIO);
     /// Init Exit Menu
     add_menu_zone(MENU_TYPE_EXIT);
     /// Init Powerdown Menu

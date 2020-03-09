@@ -32,6 +32,7 @@ static char *defaultconfig[] =
 	"bind s +start",
 	"bind k +select",
 	"bind q menu",
+	"bind h aspectratiochange",
 	"bind c volumeinc",
 	"bind e volumedec",
 	"bind g brightnessinc",

@@ -184,6 +184,26 @@ static int cmd_menu(int argc, char **argv)
 	return 0;
 }
 
+static int cmd_aspectratiochange(int argc, char **argv)
+{
+	printf("Change aspect ratio\n");
+
+	FILE *fp;
+	char shell_cmd[100];
+    aspect_ratio = (aspect_ratio+1)%NB_ASPECT_RATIOS_TYPES;
+
+    /// ----- Hud Msg -----
+    sprintf(shell_cmd, "%s %d \"     DISPLAY MODE: %s\"",
+	SHELL_CMD_NOTIF, NOTIF_SECONDS_DISP, aspect_ratio_name[aspect_ratio]);
+
+    fp = popen(shell_cmd, "r");
+    if (fp == NULL) {
+        printf("Failed to run command %s\n", shell_cmd);
+    }
+
+	return 0;
+}
+
 
 /*
  * table of command names and the corresponding functions to be called
@@ -200,6 +220,7 @@ rccmd_t rccmds[] =
 	RCC("quit", cmd_quit),
 	RCC("savestate", cmd_savestate),
 	RCC("loadstate", cmd_loadstate),
+	RCC("aspectratiochange", cmd_aspectratiochange),
 	RCC("menu", cmd_menu),
 	RCC("volumeinc", cmd_inc_volume),
 	RCC("volumedec", cmd_dec_volume),

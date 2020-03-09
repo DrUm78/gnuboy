@@ -613,6 +613,80 @@ void upscale_160x144_to_240x240_bilinearish(SDL_Surface *src_surface, SDL_Surfac
 }
 
 
+void upscale_160x144_to_240x216_bilinearish(SDL_Surface *src_surface, SDL_Surface *dst_surface)
+{
+	if(src_surface->w != 160){
+		printf("src_surface->w (%d) != 160 \n", src_surface->w);
+		return;
+	}
+	if(src_surface->h != 144){
+		printf("src_surface->h (%d) != 144 \n", src_surface->h);
+		return;
+	}
+
+	/* Y padding for centering */
+	uint32_t y_padding = (240 - 216)/2+1;
+
+	uint16_t* Src16 = (uint16_t*) src_surface->pixels;
+	uint16_t* Dst16 = ((uint16_t*) dst_surface->pixels) + y_padding*240;
+
+	// There are 80 blocks of 2 pixels horizontally, and 72 of 2 horizontally.
+	// Horizontally: 240=80*3 160=80*2
+	// Vertically: 216=72*3 144=72*2
+	// Each block of 2*3 becomes 3x5.
+	uint32_t BlockX, BlockY;
+	uint16_t* BlockSrc;
+	uint16_t* BlockDst;
+	volatile uint16_t  _a, _b, _ab, __a, __b, __ab;
+	for (BlockY = 0; BlockY < 72; BlockY++)
+	{
+
+		BlockSrc = Src16 + BlockY * 160 * 2;
+		BlockDst = Dst16 + BlockY * 240 * 3;
+		for (BlockX = 0; BlockX < 80; BlockX++)
+		{
+			/* Horizontaly:
+			 * Before(2):
+			 * (a)(b)
+			 * After(3):
+			 * (a)(ab)(b)
+			 */
+
+			/* Verticaly:
+			 * Before(2):
+			 * (1)(2)
+			 * After(3):
+			 * (1)(12)(2)
+			 */
+
+			// -- Line 1 --
+			_a = *(BlockSrc               );
+			_b = *(BlockSrc            + 1);
+			_ab = Weight1_1( _a,  _b);
+			*(BlockDst               ) = _a;
+			*(BlockDst            + 1) = _ab;
+			*(BlockDst            + 2) = _b;
+
+			// -- Line 2 --
+			__a = *(BlockSrc            + 160*1	   );
+			__b = *(BlockSrc            + 160*1 + 1);
+			__ab = Weight1_1( __a,  __b);
+			*(BlockDst            + 240*1	 ) = Weight1_1(_a, __a);
+			*(BlockDst            + 240*1 + 1) = Weight1_1(_ab, __ab);
+			*(BlockDst            + 240*1 + 2) = Weight1_1(_b, __b);
+
+			// -- Line 3 --
+			*(BlockDst            + 240*2	 ) = __a;
+			*(BlockDst            + 240*2 + 1) = __ab;
+			*(BlockDst            + 240*2 + 2) = __b;
+
+			BlockSrc += 2;
+			BlockDst += 3;
+		}
+	}
+}
+
+
 
 void SDL_Rotate_270(SDL_Surface * hw_surface, SDL_Surface * virtual_hw_surface){
   int i, j;
@@ -679,11 +753,30 @@ void vid_end()
 	SDL_LockSurface( hw_screen );
 	}
 
-	/// Fullscreen
-	/*flip_NNOptimized_AllowOutOfScreen(gb_screen, hw_screen,
-	  RES_HW_SCREEN_HORIZONTAL, RES_HW_SCREEN_VERTICAL);*
-	//memcpy(hw_screen->pixels, gb_screen->pixels, gb_screen->w*gb_screen->h*gb_screen->format->BytesPerPixel);
-	upscale_160x144_to_240x240_bilinearish(gb_screen, hw_screen);
+	/* Clear screen if necessary */
+	static ENUM_ASPECT_RATIOS_TYPES prev_aspect_ratio = NB_ASPECT_RATIOS_TYPES;
+	if(prev_aspect_ratio != aspect_ratio){
+		memset(hw_screen->pixels, 0, hw_screen->w*hw_screen->h*hw_screen->format->BytesPerPixel);
+		prev_aspect_ratio = aspect_ratio;
+	}
+
+	/* Blit scaled based on defined aspect ratio */
+	switch(aspect_ratio){
+		case ASPECT_RATIOS_TYPE_STRECHED:
+		upscale_160x144_to_240x240_bilinearish(gb_screen, hw_screen);
+		/*flip_NNOptimized_AllowOutOfScreen(gb_screen, hw_screen,
+	        RES_HW_SCREEN_HORIZONTAL, RES_HW_SCREEN_VERTICAL);*/
+		break;
+
+		case ASPECT_RATIOS_TYPE_SCALED:
+		upscale_160x144_to_240x216_bilinearish(gb_screen, hw_screen);
+		break;
+
+		default:
+		printf("ERROR in %s, wrong aspect ratio: %d\n", aspect_ratio);
+		aspect_ratio = ASPECT_RATIOS_TYPE_STRECHED;
+		break;
+	}
 
 	//If the surface must be unlocked
 	if( SDL_MUSTLOCK( hw_screen ) )

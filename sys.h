@@ -32,9 +32,7 @@ typedef enum{
 
 ///------ Definition of the different aspect ratios
 #define ASPECT_RATIOS \
-    X(ASPECT_RATIOS_TYPE_MANUAL, "MANUAL ZOOM") \
     X(ASPECT_RATIOS_TYPE_STRECHED, "STRECHED") \
-    X(ASPECT_RATIOS_TYPE_CROPPED, "CROPPED") \
     X(ASPECT_RATIOS_TYPE_SCALED, "SCALED") \
     X(NB_ASPECT_RATIOS_TYPES, "")
 
@@ -75,9 +73,9 @@ extern int volume_percentage;
 extern int brightness_percentage;
 extern int stop_menu_loop;
 
-/*extern const char *aspect_ratio_name[];
+extern const char *aspect_ratio_name[];
 extern int aspect_ratio;
-extern int aspect_ratio_factor_percent;
+/*extern int aspect_ratio_factor_percent;
 extern int aspect_ratio_factor_step;*/
 
 

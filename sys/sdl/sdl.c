@@ -20,6 +20,35 @@
 #include "rc.h"
 #include "loader.h"
 
+
+
+#define AVERAGE(z, x) ((((z) & 0xF7DEF7DE) >> 1) + (((x) & 0xF7DEF7DE) >> 1))
+#define AVERAGEHI(AB) ((((AB) & 0xF7DE0000) >> 1) + (((AB) & 0xF7DE) << 15))
+#define AVERAGELO(CD) ((((CD) & 0xF7DE) >> 1) + (((CD) & 0xF7DE0000) >> 17))
+
+// Support math
+#define Half(A) (((A) >> 1) & 0x7BEF)
+#define Quarter(A) (((A) >> 2) & 0x39E7)
+// Error correction expressions to piece back the lower bits together
+#define RestHalf(A) ((A) & 0x0821)
+#define RestQuarter(A) ((A) & 0x1863)
+
+// Error correction expressions for quarters of pixels
+#define Corr1_3(A, B)     Quarter(RestQuarter(A) + (RestHalf(B) << 1) + RestQuarter(B))
+#define Corr3_1(A, B)     Quarter((RestHalf(A) << 1) + RestQuarter(A) + RestQuarter(B))
+
+// Error correction expressions for halves
+#define Corr1_1(A, B)     ((A) & (B) & 0x0821)
+
+// Quarters
+#define Weight1_3(A, B)   (Quarter(A) + Half(B) + Quarter(B) + Corr1_3(A, B))
+#define Weight3_1(A, B)   (Half(A) + Quarter(A) + Quarter(B) + Corr3_1(A, B))
+
+// Halves
+#define Weight1_1(A, B)   (Half(A) + Half(B) + Corr1_1(A, B))
+
+
+
 struct fb fb;
 
 static int use_yuv = -1;
@@ -170,6 +199,9 @@ void vid_init()
 		vmode[0] = 160 * scale;
 		vmode[1] = 144 * scale;
 	}
+
+	/* Set env var for no mouse */
+	putenv(strdup("SDL_NOMOUSE=1"));
 	
 	//flags = SDL_ANYFORMAT | SDL_HWPALETTE | SDL_HWSURFACE;
 	flags = SDL_HWPALETTE | SDL_HWSURFACE;
@@ -495,6 +527,93 @@ void flip_NNOptimized_AllowOutOfScreen(SDL_Surface *virtual_screen, SDL_Surface 
 }
 
 
+void upscale_160x144_to_240x240_bilinearish(SDL_Surface *src_surface, SDL_Surface *dst_surface)
+{
+	if(src_surface->w != 160){
+		printf("src_surface->w (%d) != 160 \n", src_surface->w);
+		return;
+	}
+	if(src_surface->h != 144){
+		printf("src_surface->h (%d) != 144 \n", src_surface->h);
+		return;
+	}
+
+	uint16_t* Src16 = (uint16_t*) src_surface->pixels;
+	uint16_t* Dst16 = (uint16_t*) dst_surface->pixels;
+
+	// There are 80 blocks of 2 pixels horizontally, and 48 of 3 horizontally.
+	// Horizontally: 240=80*3 160=80*2
+	// Vertically: 240=48*5 144=48*3
+	// Each block of 2*3 becomes 3x5.
+	uint32_t BlockX, BlockY;
+	uint16_t* BlockSrc;
+	uint16_t* BlockDst;
+	uint16_t  _a, _b, _ab, __a, __b, __ab;
+	for (BlockY = 0; BlockY < 48; BlockY++)
+	{
+		BlockSrc = Src16 + BlockY * 160 * 3;
+		BlockDst = Dst16 + BlockY * 240 * 5;
+		for (BlockX = 0; BlockX < 80; BlockX++)
+		{
+			/* Horizontaly:
+			 * Before(2):
+			 * (a)(b)
+			 * After(3):
+			 * (a)(ab)(b)
+			 */
+
+			/* Verticaly:
+			 * Before(3):
+			 * (1)(2)(3)
+			 * After(5):
+			 * (1)(12)(2)(23)(3)
+			 */
+
+			// -- Line 1 --
+			_a = *(BlockSrc               );
+			_b = *(BlockSrc            + 1);
+			_ab = Weight1_1( _a,  _b);
+			*(BlockDst               ) = _a;
+			*(BlockDst            + 1) = _ab;
+			*(BlockDst            + 2) = _b;
+
+			// -- Line 2 --
+			__a = *(BlockSrc            + 160*1	   );
+			__b = *(BlockSrc            + 160*1 + 1);
+			__ab = Weight1_1( __a,  __b);
+			*(BlockDst            + 240*1	 ) = Weight1_1(_a, __a);
+			*(BlockDst            + 240*1 + 1) = Weight1_1(_ab, __ab);
+			*(BlockDst            + 240*1 + 2) = Weight1_1(_b, __b);
+
+			// -- Line 3 --
+			*(BlockDst            + 240*2	 ) = __a;
+			*(BlockDst            + 240*2 + 1) = __ab;
+			*(BlockDst            + 240*2 + 2) = __b;
+
+			// -- Line 4 --
+			_a = __a;
+			_b = __b;
+			_ab = __ab;
+			__a = *(BlockSrc            + 160*2	   );
+			__b = *(BlockSrc            + 160*2 + 1);
+			__ab = Weight1_1( __a,  __b);
+			*(BlockDst            + 240*3	 ) = Weight1_1(_a, __a);
+			*(BlockDst            + 240*3 + 1) = Weight1_1(_ab, __ab);
+			*(BlockDst            + 240*3 + 2) = Weight1_1(_b, __b);
+
+			// -- Line 5 --
+			*(BlockDst            + 240*4	 ) = __a;
+			*(BlockDst            + 240*4 + 1) = __ab;
+			*(BlockDst            + 240*4 + 2) = __b;
+
+			BlockSrc += 2;
+			BlockDst += 3;
+		}
+	}
+}
+
+
+
 void SDL_Rotate_270(SDL_Surface * hw_surface, SDL_Surface * virtual_hw_surface){
   int i, j;
     uint16_t *source_pixels = (uint16_t*) virtual_hw_surface->pixels;
@@ -561,8 +680,10 @@ void vid_end()
 	}
 
 	/// Fullscreen
-	flip_NNOptimized_AllowOutOfScreen(gb_screen, hw_screen,
-        RES_HW_SCREEN_HORIZONTAL, RES_HW_SCREEN_VERTICAL);
+	/*flip_NNOptimized_AllowOutOfScreen(gb_screen, hw_screen,
+	  RES_HW_SCREEN_HORIZONTAL, RES_HW_SCREEN_VERTICAL);*
+	//memcpy(hw_screen->pixels, gb_screen->pixels, gb_screen->w*gb_screen->h*gb_screen->format->BytesPerPixel);
+	upscale_160x144_to_240x240_bilinearish(gb_screen, hw_screen);
 
 	//If the surface must be unlocked
 	if( SDL_MUSTLOCK( hw_screen ) )

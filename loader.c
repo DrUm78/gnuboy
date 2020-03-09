@@ -460,7 +460,7 @@ void loader_init(char *s)
 {
 	char *name, *p;
 
-	/* Surcharge savedir */
+	/* Surcharge savedir for FunKey */
 	savedir = mRomPath;
 
 	/* savedir needs to be writable */

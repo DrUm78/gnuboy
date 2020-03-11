@@ -1045,7 +1045,7 @@ int launch_resume_menu_loop()
 
                     case SDLK_d:
                     case SDLK_DOWN:
-                        MENU_DEBUG_PRINTF("Option DWON\n");
+                        MENU_DEBUG_PRINTF("Option DOWN\n");
                         option_idx = (option_idx+1)%NB_RESUME_OPTIONS;
 
                         /// ------ Reset menu confirmation ------

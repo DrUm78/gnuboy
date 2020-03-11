@@ -146,20 +146,20 @@ void emu_run()
 
 	int resume = launch_resume_menu_loop();
 	if(resume == RESUME_YES){
-	    printf("Resume game from quick save file: %s\n", quick_save_file);
-	    state_file_load(quick_save_file);
+		printf("Resume game from quick save file: %s\n", quick_save_file);
+		state_file_load(quick_save_file);
 	}
 	else{
-	    printf("Reset game\n");
-	}
-    }
+		printf("Reset game\n");
 
-    /* Remove quicksave file if present */
-    if (remove(quick_save_file) == 0){
-        printf("Deleted successfully: %s\n", quick_save_file);
-    }
-    else{
-        printf("Unable to delete the file: %s\n", quick_save_file);
+          /* Remove quicksave file if present */
+          if (remove(quick_save_file) == 0){
+            printf("Deleted successfully: %s\n", quick_save_file);
+          }
+          else{
+            printf("Unable to delete the file: %s\n", quick_save_file);
+          }
+	}
     }
 
     /* Main emulation loop */

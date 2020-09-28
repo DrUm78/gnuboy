@@ -762,7 +762,7 @@ void vid_end()
 
 	/* Blit scaled based on defined aspect ratio */
 	switch(aspect_ratio){
-		case ASPECT_RATIOS_TYPE_STRECHED:
+		case ASPECT_RATIOS_TYPE_STRETCHED:
 		upscale_160x144_to_240x240_bilinearish(gb_screen, hw_screen);
 		/*flip_NNOptimized_AllowOutOfScreen(gb_screen, hw_screen,
 	        RES_HW_SCREEN_HORIZONTAL, RES_HW_SCREEN_VERTICAL);*/
@@ -774,7 +774,7 @@ void vid_end()
 
 		default:
 		printf("ERROR in %s, wrong aspect ratio: %d\n", aspect_ratio);
-		aspect_ratio = ASPECT_RATIOS_TYPE_STRECHED;
+		aspect_ratio = ASPECT_RATIOS_TYPE_STRETCHED;
 		break;
 	}
 

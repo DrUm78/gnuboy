@@ -204,7 +204,7 @@ void vid_init()
 	putenv(strdup("SDL_NOMOUSE=1"));
 	
 	//flags = SDL_ANYFORMAT | SDL_HWPALETTE | SDL_HWSURFACE;
-	flags = SDL_HWPALETTE | SDL_HWSURFACE;
+	flags = SDL_HWPALETTE | SDL_HWSURFACE | SDL_DOUBLEBUF;
 
 	if (fullscreen)
 		flags |= SDL_FULLSCREEN;
@@ -747,11 +747,11 @@ void vid_end()
 
 
 	//If the surface must be locked
-	if( SDL_MUSTLOCK( hw_screen ) )
+	/*if( SDL_MUSTLOCK( hw_screen ) )
 	{
 		// Lock the surface
 	SDL_LockSurface( hw_screen );
-	}
+	}*/
 
 	/* Clear screen if necessary */
 	static ENUM_ASPECT_RATIOS_TYPES prev_aspect_ratio = NB_ASPECT_RATIOS_TYPES;
@@ -779,11 +779,11 @@ void vid_end()
 	}
 
 	//If the surface must be unlocked
-	if( SDL_MUSTLOCK( hw_screen ) )
+	/*if( SDL_MUSTLOCK( hw_screen ) )
 	{
 		// Lock the surface
 	SDL_UnlockSurface( hw_screen );
-	}
+	}*/
 
 	if (fb.enabled) vid_flip();
 }

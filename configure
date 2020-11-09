@@ -2216,8 +2216,6 @@ done
 fi
 done
 
-LIBS="$LIBS -L/usr/local/lib -L/usr/X11R6/lib"
-
 # Check whether --with-fb or --without-fb was given.
 if test "${with_fb+set}" = set; then
   withval="$with_fb"
@@ -2655,8 +2653,8 @@ echo "${ECHO_T}no" >&6
 fi
 
 if test "$SDL_CONFIG" ; then
-SDL_LIBS="`sdl-config --libs`"
-SDL_CFLAGS="`sdl-config --cflags`"
+SDL_LIBS="`$SDL_CONFIG --libs`"
+SDL_CFLAGS="`$SDL_CONFIG --cflags`"
 old_incs="$INCS"
 INCS="$INCS $SDL_CFLAGS"
 echo "$as_me:2662: checking for SDL_Init in -lSDL" >&5

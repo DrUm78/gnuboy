@@ -30,5 +30,3 @@ void state_file_load(char *filepath);
 int check_savefile(int n, char *savefile);
 
 #endif
-
-

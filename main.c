@@ -181,13 +181,13 @@ static int bad_signals[] =
 /* Handler for SIGUSR1, caused by closing the console */
 void handle_sigusr1(int sig)
 {
-    //printf("Caught signal USR1 %d\n", sig);
+	//printf("Caught signal USR1 %d\n", sig);
 
-    /* Exit menu if it was launched */
-    stop_menu_loop = 1;
+	/* Exit menu if it was launched */
+	stop_menu_loop = 1;
 
-    /* Signal to quick save and poweoff after next loop */
-    mQuickSaveAndPoweroff = 1;
+	/* Signal to quick save and poweoff after next loop */
+	mQuickSaveAndPoweroff = 1;
 }
 
 static void fatalsignal(int s)
@@ -246,21 +246,21 @@ int main(int argc, char *argv[])
 
 	/* Save Rom path */
 	mRomName = rom;
-    mRomPath = (char *)malloc(strlen(mRomName)+1);
-    strcpy(mRomPath, mRomName);
-    char *slash = strrchr ((char*)mRomPath, '/');
-    *slash = 0;
+	mRomPath = (char *) malloc(strlen(mRomName) + 1);
+	strcpy(mRomPath, mRomName);
+	char *slash = strrchr((char *) mRomPath, '/');
+	*slash = 0;
 
-    /* Rom name without extension */
-    char *point = strrchr ((char*)slash+1, '.');
-    *point = 0;
+	/* Rom name without extension */
+	char *point = strrchr ((char *) slash + 1, '.');
+	*point = 0;
 
-    /* Set quicksave filename */
-    quick_save_file = (char *)malloc(strlen(mRomPath) + strlen(slash+1) +
-          strlen(quick_save_file_extension) + 2 + 1);
-    sprintf(quick_save_file, "%s/%s.%s",
-          mRomPath, slash+1, quick_save_file_extension);
-    printf("Quick_save_file: %s\n", quick_save_file);
+	/* Set quicksave filename */
+	quick_save_file = (char *) malloc(strlen(mRomPath) + strlen(slash + 1) +
+					  strlen(quick_save_file_extension) + 2 + 1);
+	sprintf(quick_save_file, "%s/%s.%s",
+		mRomPath, slash + 1, quick_save_file_extension);
+	printf("Quick_save_file: %s\n", quick_save_file);
 
 	/* Init USR1 Signal (for quick save and poweroff) */
 	signal(SIGUSR1, handle_sigusr1);

@@ -1186,6 +1186,3 @@ int launch_resume_menu_loop()
 
     return option_idx;
 }
-
-
-

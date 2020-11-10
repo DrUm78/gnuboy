@@ -14,5 +14,3 @@ extern char *quick_save_file;
 extern int mQuickSaveAndPoweroff;
 
 #endif
-
-

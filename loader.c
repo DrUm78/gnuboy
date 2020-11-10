@@ -513,12 +513,3 @@ rcvar_t loader_exports[] =
 	RCV_INT("memrand", &memrand),
 	RCV_END
 };
-
-
-
-
-
-
-
-
-

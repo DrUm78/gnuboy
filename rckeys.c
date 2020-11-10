@@ -82,7 +82,3 @@ void rc_dokey(int key, int st)
 		keybind[key][0] = '+';
 	}
 }
-
-
-
-

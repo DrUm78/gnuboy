@@ -104,18 +104,19 @@ static int cmd_loadstate(int argc, char **argv)
 static int cmd_inc_volume(int argc, char **argv)
 {
 	printf("Increase volume\n");
-    char shell_cmd[100];
-    FILE *fp;
+	char shell_cmd[100];
+	FILE *fp;
 
-    /// ----- Compute new value -----
-	volume_percentage = (volume_percentage > 100 - STEP_CHANGE_VOLUME)?
-							100:(volume_percentage+STEP_CHANGE_VOLUME);
+	/// ----- Compute new value -----
+	volume_percentage = (volume_percentage > 100 - STEP_CHANGE_VOLUME) ?
+		100 : (volume_percentage + STEP_CHANGE_VOLUME);
 
 	/// ----- Shell cmd ----
-    sprintf(shell_cmd, "%s %d", SHELL_CMD_VOLUME_SET, volume_percentage);
-    fp = popen(shell_cmd, "r");
-    if (fp == NULL) {
-	printf("Failed to run command %s\n", shell_cmd);
+	sprintf(shell_cmd, "%s %d", SHELL_CMD_VOLUME_SET, volume_percentage);
+	fp = popen(shell_cmd, "r");
+	if (fp == NULL)
+	{
+		printf("Failed to run command %s\n", shell_cmd);
 	}
 	return 0;
 }
@@ -123,18 +124,19 @@ static int cmd_inc_volume(int argc, char **argv)
 static int cmd_dec_volume(int argc, char **argv)
 {
 	printf("Decrease volume\n");
-    char shell_cmd[100];
-    FILE *fp;
+	char shell_cmd[100];
+	FILE *fp;
 
-    /// ----- Compute new value -----
-	volume_percentage = (volume_percentage < STEP_CHANGE_VOLUME)?
-							0:(volume_percentage-STEP_CHANGE_VOLUME);
+	/// ----- Compute new value -----
+	volume_percentage = (volume_percentage < STEP_CHANGE_VOLUME) ?
+		0 : (volume_percentage - STEP_CHANGE_VOLUME);
 
 	/// ----- Shell cmd ----
-    sprintf(shell_cmd, "%s %d", SHELL_CMD_VOLUME_SET, volume_percentage);
-    fp = popen(shell_cmd, "r");
-    if (fp == NULL) {
-	printf("Failed to run command %s\n", shell_cmd);
+	sprintf(shell_cmd, "%s %d", SHELL_CMD_VOLUME_SET, volume_percentage);
+	fp = popen(shell_cmd, "r");
+	if (fp == NULL)
+	{
+		printf("Failed to run command %s\n", shell_cmd);
 	}
 	return 0;
 }
@@ -142,18 +144,19 @@ static int cmd_dec_volume(int argc, char **argv)
 static int cmd_inc_brightness(int argc, char **argv)
 {
 	printf("Increase brightness\n");
-    char shell_cmd[100];
-    FILE *fp;
+	char shell_cmd[100];
+	FILE *fp;
 
-    /// ----- Compute new value -----
-	brightness_percentage = (brightness_percentage > 100 - STEP_CHANGE_BRIGHTNESS)?
-								100:(brightness_percentage+STEP_CHANGE_BRIGHTNESS);
+	/// ----- Compute new value -----
+	brightness_percentage = (brightness_percentage > 100 - STEP_CHANGE_BRIGHTNESS) ?
+		100 : (brightness_percentage + STEP_CHANGE_BRIGHTNESS);
 
-    /// ----- Shell cmd ----
+	/// ----- Shell cmd ----
 	sprintf(shell_cmd, "%s %d", SHELL_CMD_BRIGHTNESS_SET, brightness_percentage);
-    fp = popen(shell_cmd, "r");
-    if (fp == NULL) {
-	printf("Failed to run command %s\n", shell_cmd);
+	fp = popen(shell_cmd, "r");
+	if (fp == NULL)
+	{
+		printf("Failed to run command %s\n", shell_cmd);
 	}
 	return 0;
 }
@@ -161,18 +164,19 @@ static int cmd_inc_brightness(int argc, char **argv)
 static int cmd_dec_brightness(int argc, char **argv)
 {
 	printf("Decrease brightness\n");
-    char shell_cmd[100];
-    FILE *fp;
+	char shell_cmd[100];
+	FILE *fp;
 
-    /// ----- Compute new value -----
-	brightness_percentage = (brightness_percentage < STEP_CHANGE_BRIGHTNESS)?
-							0:(brightness_percentage-STEP_CHANGE_BRIGHTNESS);
+	/// ----- Compute new value -----
+	brightness_percentage = (brightness_percentage < STEP_CHANGE_BRIGHTNESS) ?
+		0 : (brightness_percentage-STEP_CHANGE_BRIGHTNESS);
 
-    /// ----- Shell cmd ----
+	/// ----- Shell cmd ----
 	sprintf(shell_cmd, "%s %d", SHELL_CMD_BRIGHTNESS_SET, brightness_percentage);
-    fp = popen(shell_cmd, "r");
-    if (fp == NULL) {
-	printf("Failed to run command %s\n", shell_cmd);
+	fp = popen(shell_cmd, "r");
+	if (fp == NULL)
+	{
+		printf("Failed to run command %s\n", shell_cmd);
 	}
 	return 0;
 }
@@ -190,17 +194,17 @@ static int cmd_aspectratiochange(int argc, char **argv)
 
 	FILE *fp;
 	char shell_cmd[100];
-    aspect_ratio = (aspect_ratio+1)%NB_ASPECT_RATIOS_TYPES;
+	aspect_ratio = (aspect_ratio + 1) % NB_ASPECT_RATIOS_TYPES;
 
-    /// ----- Hud Msg -----
-    sprintf(shell_cmd, "%s %d \"     DISPLAY MODE: %s\"",
-	SHELL_CMD_NOTIF, NOTIF_SECONDS_DISP, aspect_ratio_name[aspect_ratio]);
+	/// ----- Hud Msg -----
+	sprintf(shell_cmd, "%s %d \"     DISPLAY MODE: %s\"",
+		SHELL_CMD_NOTIF, NOTIF_SECONDS_DISP, aspect_ratio_name[aspect_ratio]);
 
-    fp = popen(shell_cmd, "r");
-    if (fp == NULL) {
-        printf("Failed to run command %s\n", shell_cmd);
-    }
-
+	fp = popen(shell_cmd, "r");
+	if (fp == NULL)
+	{
+        	printf("Failed to run command %s\n", shell_cmd);
+	}
 	return 0;
 }
 
@@ -281,26 +285,3 @@ int rc_command(char *line)
 	
 	return -1;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

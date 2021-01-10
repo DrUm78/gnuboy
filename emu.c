@@ -44,38 +44,30 @@ rcvar_t emu_exports[] =
 /* Quick save and turn off the console */
 void quick_save_and_poweroff()
 {
-	/* Vars */
-	char shell_cmd[1024];
-	FILE *fp;
+	printf("Save Instant Play file\n");
 
-	/* Send command to kill any previously scheduled shutdown */
-	sprintf(shell_cmd, "pkill %s", SHELL_CMD_SCHEDULE_POWERDOWN);
-	fp = popen(shell_cmd, "r");
-	if (fp == NULL)
+	Uint32 start = SDL_GetTicks();
+
+	/* Send command to cancel any previously scheduled powerdown */
+	if (popen(SHELL_CMD_CANCEL_SCHED_POWERDOWN, "r") == NULL)
 	{
-		printf("Failed to run command %s\n", shell_cmd);
+	        /* Countdown is still ticking, so better do nothing
+	           than start writing and get interrupted!
+		*/
+		printf("Failed to cancel scheduled shutdown\n");
+		exit(0);
 	}
 
+	printf("============== Cancel time %d\n", SDL_GetTicks() - start);
 	/* Save  */
 	state_file_save(quick_save_file);
 
-	/* Write quick load file */
-	sprintf(shell_cmd, "%s SDL_NOMOUSE=1 \"%s\" --loadStateFile \"%s\" \"%s\"",
-		SHELL_CMD_WRITE_QUICK_LOAD_CMD, prog_name, quick_save_file, mRomName);
-	printf("Cmd write quick load file:\n  %s\n", shell_cmd);
-	fp = popen(shell_cmd, "r");
-	if (fp == NULL)
-	{
-		printf("Failed to run command %s\n", shell_cmd);
-	}
+	/* Perform Instant Play save and shutdown */
+	execlp(SHELL_CMD_INSTANT_PLAY, SHELL_CMD_INSTANT_PLAY,
+	       prog_name, "--loadStateFile", quick_save_file, mRomName, NULL);
 
-	/* Clean Poweroff */
-	sprintf(shell_cmd, "%s", SHELL_CMD_POWERDOWN);
-	fp = popen(shell_cmd, "r");
-	if (fp == NULL)
-	{
-		printf("Failed to run command %s\n", shell_cmd);
-	}
+	/* Should not be reached */
+	printf("Failed to perform Instant Play save and shutdown\n");
 
 	/* Exit Emulator */
 	exit(0);

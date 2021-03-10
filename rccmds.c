@@ -9,6 +9,7 @@
 #include "loader.h"
 #include "split.h"
 #include "sys.h"
+#include "configfile.h"
 
 
 /*
@@ -205,6 +206,9 @@ static int cmd_aspectratiochange(int argc, char **argv)
 	{
         	printf("Failed to run command %s\n", shell_cmd);
 	}
+
+    // Save config file
+    configfile_save(cfg_file_rom);
 	return 0;
 }
 

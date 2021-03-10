@@ -14,6 +14,7 @@
 #include "rc.h"
 #include "rtc.h"
 #include "sys.h"
+#include "configfile.h"
 #include "sound.h"
 #include "cpu.h"
 
@@ -28,6 +29,10 @@ char *quick_save_file_extension = "quicksave";
 char *mRomName = NULL;
 char *mRomPath = NULL;
 char *quick_save_file = NULL;
+char *cfg_file_default = NULL;
+char *cfg_file_rom = NULL;
+char *cfg_file_default_name = "default_config";
+char *cfg_file_extension = "cfg";
 int mQuickSaveAndPoweroff=0;
 
 

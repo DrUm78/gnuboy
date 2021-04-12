@@ -15,7 +15,7 @@
 #include <SDL/SDL_ttf.h>
 
 #include "sys.h"
-#include "configfile.h"
+#include "configfile_fk.h"
 #include "fb.h"
 #include "input.h"
 #include "rc.h"

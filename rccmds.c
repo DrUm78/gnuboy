@@ -9,7 +9,7 @@
 #include "loader.h"
 #include "split.h"
 #include "sys.h"
-#include "configfile.h"
+#include "configfile_fk.h"
 
 
 /*

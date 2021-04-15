@@ -14,7 +14,7 @@
 #include "rc.h"
 #include "rtc.h"
 #include "sys.h"
-#include "configfile.h"
+#include "configfile_fk.h"
 #include "sound.h"
 #include "cpu.h"
 
@@ -32,7 +32,7 @@ char *quick_save_file = NULL;
 char *cfg_file_default = NULL;
 char *cfg_file_rom = NULL;
 char *cfg_file_default_name = "default_config";
-char *cfg_file_extension = "cfg";
+char *cfg_file_extension = "fkcfg";
 int mQuickSaveAndPoweroff=0;
 
 

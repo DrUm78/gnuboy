@@ -118,6 +118,8 @@ static int cmd_inc_volume(int argc, char **argv)
 	if (fp == NULL)
 	{
 		printf("Failed to run command %s\n", shell_cmd);
+	} else {
+		pclose(fp);
 	}
 	return 0;
 }
@@ -138,6 +140,8 @@ static int cmd_dec_volume(int argc, char **argv)
 	if (fp == NULL)
 	{
 		printf("Failed to run command %s\n", shell_cmd);
+	} else {
+		pclose(fp);
 	}
 	return 0;
 }
@@ -158,6 +162,8 @@ static int cmd_inc_brightness(int argc, char **argv)
 	if (fp == NULL)
 	{
 		printf("Failed to run command %s\n", shell_cmd);
+	} else {
+		pclose(fp);
 	}
 	return 0;
 }
@@ -178,6 +184,8 @@ static int cmd_dec_brightness(int argc, char **argv)
 	if (fp == NULL)
 	{
 		printf("Failed to run command %s\n", shell_cmd);
+	} else {
+		pclose(fp);
 	}
 	return 0;
 }
@@ -205,6 +213,8 @@ static int cmd_aspectratiochange(int argc, char **argv)
 	if (fp == NULL)
 	{
         	printf("Failed to run command %s\n", shell_cmd);
+	} else {
+		pclose(fp);
 	}
 
     // Save config file

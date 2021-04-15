@@ -49,12 +49,15 @@ rcvar_t emu_exports[] =
 /* Quick save and turn off the console */
 void quick_save_and_poweroff()
 {
+	FILE *fp;
+
 	printf("Save Instant Play file\n");
 
 	Uint32 start = SDL_GetTicks();
 
 	/* Send command to cancel any previously scheduled powerdown */
-	if (popen(SHELL_CMD_CANCEL_SCHED_POWERDOWN, "r") == NULL)
+	fp = popen(SHELL_CMD_CANCEL_SCHED_POWERDOWN, "r");
+	if (fp == NULL)
 	{
 	        /* Countdown is still ticking, so better do nothing
 	           than start writing and get interrupted!
@@ -62,6 +65,7 @@ void quick_save_and_poweroff()
 		printf("Failed to cancel scheduled shutdown\n");
 		exit(0);
 	}
+	pclose(fp);
 
 	printf("============== Cancel time %d\n", SDL_GetTicks() - start);
 	/* Save  */

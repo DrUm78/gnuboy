@@ -642,7 +642,7 @@ void run_menu_loop()
     }
 
     /* Stop Ampli */
-    system(SHELL_CMD_TURN_AMPLI_OFF);
+    system(SHELL_CMD_AUDIO_AMP_OFF);
 
     /// -------- Main loop ---------
     while (!stop_menu_loop)
@@ -985,7 +985,7 @@ void run_menu_loop()
     }
 
     /* Start Ampli */
-    system(SHELL_CMD_TURN_AMPLI_ON);
+    system(SHELL_CMD_AUDIO_AMP_ON);
 }
 
 
@@ -1010,7 +1010,7 @@ int launch_resume_menu_loop()
     int option_idx=RESUME_YES;
 
     /* Stop Ampli */
-    system(SHELL_CMD_TURN_AMPLI_OFF);
+    system(SHELL_CMD_AUDIO_AMP_OFF);
 
     /* Save prev key repeat params and set new Key repeat */
     SDL_GetKeyRepeat(&backup_key_repeat_delay, &backup_key_repeat_interval);
@@ -1183,7 +1183,7 @@ int launch_resume_menu_loop()
     }
 
     /* Start Ampli */
-    system(SHELL_CMD_TURN_AMPLI_ON);
+    system(SHELL_CMD_AUDIO_AMP_ON);
 
     return option_idx;
 }

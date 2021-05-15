@@ -854,7 +854,7 @@ void run_menu_loop()
 
                                 /// ----- Hud Msg -----
                                 sprintf(shell_cmd, "%s %d \"        SAVED IN SLOT %d\"",
-                                    SHELL_CMD_NOTIF, NOTIF_SECONDS_DISP, saveslot+1);
+                                    SHELL_CMD_NOTIF_SET, NOTIF_SECONDS_DISP, saveslot+1);
                                 system(shell_cmd);
                                 stop_menu_loop = 1;
                             }
@@ -882,11 +882,11 @@ void run_menu_loop()
                                 /// ----- Hud Msg -----
                                 if(quick_load_slot_chosen){
                                     sprintf(shell_cmd, "%s %d \"     LOADED FROM AUTO SAVE\"",
-                                        SHELL_CMD_NOTIF, NOTIF_SECONDS_DISP);
+                                        SHELL_CMD_NOTIF_SET, NOTIF_SECONDS_DISP);
                                 }
                                 else{
                                     sprintf(shell_cmd, "%s %d \"      LOADED FROM SLOT %d\"",
-                                        SHELL_CMD_NOTIF, NOTIF_SECONDS_DISP, saveslot+1);
+                                        SHELL_CMD_NOTIF_SET, NOTIF_SECONDS_DISP, saveslot+1);
                                 }
                                 system(shell_cmd);
                                 stop_menu_loop = 1;

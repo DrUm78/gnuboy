@@ -207,7 +207,7 @@ static int cmd_aspectratiochange(int argc, char **argv)
 
 	/// ----- Hud Msg -----
 	sprintf(shell_cmd, "%s %d \"    DISPLAY MODE: %s\"",
-		SHELL_CMD_NOTIF, NOTIF_SECONDS_DISP, aspect_ratio_name[aspect_ratio]);
+		SHELL_CMD_NOTIF_SET, NOTIF_SECONDS_DISP, aspect_ratio_name[aspect_ratio]);
 
 	fp = popen(shell_cmd, "r");
 	if (fp == NULL)

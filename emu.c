@@ -56,7 +56,7 @@ void quick_save_and_poweroff()
 	Uint32 start = SDL_GetTicks();
 
 	/* Send command to cancel any previously scheduled powerdown */
-	fp = popen(SHELL_CMD_CANCEL_SCHED_POWERDOWN, "r");
+	fp = popen(SHELL_CMD_POWERDOWN_HANDLE, "r");
 	if (fp == NULL)
 	{
 	        /* Countdown is still ticking, so better do nothing

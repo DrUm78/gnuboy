@@ -83,6 +83,7 @@ static int ramsize_table[256] =
 };
 
 
+static char *bootroms[2];
 static char *romfile;
 static char *sramfile;
 static char *rtcfile;
@@ -114,7 +115,7 @@ static void initmem(void *mem, int size)
 static byte *loadfile(FILE *f, int *len)
 {
 	int c, l = 0, p = 0;
-	byte *d = 0, buf[512];
+	byte *d = 0, buf[4096];
 
 	for(;;)
 	{
@@ -223,20 +224,39 @@ static byte *decompress(byte *data, int *len)
 	return data;
 }
 
+static FILE* rom_loadfile(char *fn, byte** data, int *len) {
+	FILE *f;
+	if (strcmp(fn, "-")) f = fopen(fn, "rb");
+	else f = stdin;
+	if (!f) die("cannot open rom file: %s\n", fn);
+	*data = loadfile(f, len);
+	*data = decompress(*data, len);
+	return f;
+}
+
+int bootrom_load() {
+	byte *data;
+	int len;
+	FILE *f;
+	REG(RI_BOOT) = 0xff;
+	if (!bootroms[hw.cgb] || !bootroms[hw.cgb][0]) return 0;
+	f = rom_loadfile(bootroms[hw.cgb], &data, &len);
+	bootrom.bank = realloc(data, 16384);
+	memset(bootrom.bank[0]+len, 0xff, 16384-len);
+	memcpy(bootrom.bank[0]+0x100, rom.bank[0]+0x100, 0x100);
+	fclose(f);
+	REG(RI_BOOT) = 0xfe;
+	return 0;
+}
 
 int rom_load()
 {
 	FILE *f;
 	byte c, *data, *header;
 	int len = 0, rlen;
+	f = rom_loadfile(romfile, &data, &len);
+	header = data;
 
-	if (strcmp(romfile, "-")) f = fopen(romfile, "rb");
-	else f = stdin;
-	if (!f) die("cannot open rom file: %s\n", romfile);
-
-	data = loadfile(f, &len);
-	header = data = decompress(data, &len);
-	
 	memcpy(rom.name, header+0x0134, 16);
 	if (rom.name[14] & 0x80) rom.name[14] = 0;
 	if (rom.name[15] & 0x80) rom.name[15] = 0;
@@ -416,18 +436,16 @@ void rtc_load()
 	fclose(f);
 }
 
-
+#define FREENULL(X) do { free(X); X = 0; } while(0)
 void loader_unload()
 {
 	sram_save();
-	if (romfile) free(romfile);
-	if (sramfile) free(sramfile);
-	if (saveprefix) free(saveprefix);
-	if (rom.bank) free(rom.bank);
-	if (ram.sbank) free(ram.sbank);
-	romfile = sramfile = saveprefix = 0;
-	rom.bank = 0;
-	ram.sbank = 0;
+	if (romfile) FREENULL(romfile);
+	if (sramfile) FREENULL(sramfile);
+	if (saveprefix) FREENULL(saveprefix);
+	if (rom.bank) FREENULL(rom.bank);
+	if (ram.sbank) FREENULL(ram.sbank);
+	if (bootrom.bank) FREENULL(bootrom.bank);
 	mbc.type = mbc.romsize = mbc.ramsize = mbc.batt = 0;
 }
 
@@ -468,6 +486,7 @@ void loader_init(char *s)
 
 	romfile = s;
 	rom_load();
+	bootrom_load();
 	vid_settitle(rom.name);
 	if (savename && *savename)
 	{
@@ -502,6 +521,8 @@ void loader_init(char *s)
 
 rcvar_t loader_exports[] =
 {
+	RCV_STRING("bootrom_dmg", &bootroms[0]),
+	RCV_STRING("bootrom_cgb", &bootroms[1]),
 	RCV_STRING("savedir", &savedir),
 	RCV_STRING("savename", &savename),
 	RCV_INT("saveslot", &saveslot),

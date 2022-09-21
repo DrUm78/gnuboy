@@ -20,6 +20,8 @@
 
 static char *defaultconfig[] =
 {
+	"bootrom_dmg \"\"",
+	"bootrom_gbc \"\"",
 	"bind esc quit",
 	"bind u +up",
 	"bind d +down",

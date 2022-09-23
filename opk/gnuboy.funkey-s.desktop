@@ -1,0 +1,7 @@
+[Desktop Entry]
+Name=gnuboy
+Comment=Game Boy/Game Boy Color emulator
+Icon=gnuboy
+Exec=gnuboy.sh %f
+Categories=emulators
+SelectorFilter=gb,gbc

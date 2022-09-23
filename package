@@ -1,0 +1,20 @@
+#!/bin/sh
+
+git fetch --all
+git merge upstream/FunKey
+cd /opt/FunKey-OS
+rm -rf FunKey/output/build/gnuboy*
+rm -f FunKey/output/target/usr/games/sdlgnuboy
+make FunKey/gnuboy-rebuild
+cp FunKey/output/target/usr/games/sdlgnuboy /opt/gnuboy/opk
+cd /opt/gnuboy
+
+if  [ ! -f opk/sdlgnuboy ]; then
+    echo 'Build failed!'
+    exit
+fi
+
+rm -f *.opk
+mksquashfs opk/ gnuboy_v1.2.3_funkey-s.opk -all-root -noappend -no-exports -no-xattrs
+md5sum opk/sdlgnuboy
+rm -f opk/sdlgnuboy

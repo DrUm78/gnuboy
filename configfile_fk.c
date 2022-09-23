@@ -35,7 +35,7 @@ unsigned int aspect_ratio_factor_step = 10;
 /*
  *Config options and default values
  */
-unsigned int aspect_ratio                   = ASPECT_RATIOS_TYPE_STRETCHED;
+unsigned int aspect_ratio                   = ASPECT_RATIOS_TYPE_SCALED;
 unsigned int aspect_ratio_factor_percent    = 50;
 
 static const struct ConfigOption options[] = {
